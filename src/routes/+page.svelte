@@ -8,13 +8,16 @@
     } from "$lib/components/tricklestore";
     import { calculateProfitPercentage } from "$lib/components/ProfitPercentWrapper.svelte";
     import ProfitShareWrapper from "$lib/components/ProfitShareWrapper.svelte";
-    import { each } from "svelte/internal";
+    import { tick } from "svelte";
+    import Input from "$lib/components/Input.svelte";
 
     let totalProfitsApplied = 0;
+    let totalProfitsToApply = 0;
     let overallExtraProfits = 0;
 
     function applyProfits() {
         totalProfitsApplied++;
+        totalProfitsToApply--;
         accounts.update((accountData) => {
             const profits: number[] = [];
 
@@ -120,6 +123,24 @@
             label: "High to Low Risk",
         },
     ];
+
+    /**
+     * Running cycles
+     */
+    let totalExtraTicks = 0;
+    async function runApply() {
+        await tick();
+
+        if (totalProfitsToApply > 0) {
+            applyProfits();
+            runApply();
+        }
+    }
+
+    function applyMultitudeProfits() {
+        totalProfitsToApply += totalExtraTicks;
+        runApply();
+    }
 </script>
 
 <svelte:head>
@@ -149,7 +170,17 @@
         <AccountWrapper index={i} {...account} />
     {/each}
     <br />
-    <button on:click={applyProfits}>Apply Profits</button>
+    <button on:click={applyProfits}>Apply profits once</button>
+    <br />
+    <div class="flex ProfitApplyer">
+        <Input bind:value={totalExtraTicks} />
+        <button on:click={applyMultitudeProfits}
+            >Apply Profits {totalExtraTicks} times</button
+        >
+    </div>
+
+    <br />
+
     <table>
         <tbody>
             <tr>
@@ -193,19 +224,12 @@
         width: 100%;
     }
 
-    .welcome {
-        display: block;
-        position: relative;
-        width: 100%;
-        height: 0;
-        padding: 0 0 calc(100% * 495 / 2048) 0;
+    .ProfitApplyer {
+        display: flex;
     }
 
-    .welcome img {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        top: 0;
-        display: block;
+    .ProfitApplyer :global(.Input) {
+        width: 80px;
+        text-align: center;
     }
 </style>
