@@ -123,7 +123,7 @@
 </script>
 
 <svelte:head>
-    <title>Home</title>
+    <title>Trickle System Example</title>
     <meta name="description" content="Trickle System Example" />
 </svelte:head>
 
